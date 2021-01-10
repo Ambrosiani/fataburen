@@ -26,7 +26,9 @@ unique_authors = getUniqueValues(articleData,'Name','Authors',[])
 
 # Initiate & configure Dash to display the graphs
 
-app = dash.Dash() 
+app = dash.Dash(__name__) 
+
+server = app.server
   
 app.layout = html.Div(children =[ 
     html.H1("Fataburen Articles 1886–2017"), 
