@@ -31,7 +31,18 @@ app = dash.Dash(__name__)
 server = app.server
   
 app.layout = html.Div(children =[ 
-    html.H1("Fataburen Articles 1886–2017"), 
+    html.H1('Fataburen Articles 1886–2017'),
+    html.P('Explore the content of Fataburen, the yearbook/journal of Nordiska museet & Skansen.'),
+    html.P(['Work in progress by ',
+        html.A(
+            children='Aron Ambrosiani',
+            href='https://twitter.com/AronAmbrosiani/'
+            ),
+        '. Code available at ',
+        html.A(
+            children='github.com/ambrosiani/fataburen/',
+            href='https://github.com/ambrosiani/fataburen/')
+        ]), 
     dcc.Dropdown(
         id='keyword',
         options=[{'label': i, 'value': i} for i in unique_keywords],
@@ -79,7 +90,7 @@ def display_click_data(clickData):
     print(clickData)
     if clickData != None:
         print ('Selected article: '+str(clickData['points'][0]['customdata'][0])+' ('+str(clickData['points'][0]['customdata'][1])+')')
-        return clickData['points'][0]['customdata'][1], 'https://urn.kb.se/resolve?urn='+ str(clickData['points'][0]['customdata'][1]),clickData['points'][0]['customdata'][0],['Title: ', html.B(children=clickData['points'][0]['customdata'][0]), html.Br(), 'Year: ', html.B(children=clickData['points'][0]['x']), html.Br(), 'Pages: ', html.B(children=clickData['points'][0]['y']), html.Br(), 'Authors: ', html.B(children=clickData['points'][0]['customdata'][3]), html.Br(), 'Keywords:', html.B(children=clickData['points'][0]['customdata'][2])]
+        return clickData['points'][0]['customdata'][1], 'https://urn.kb.se/resolve?urn='+ str(clickData['points'][0]['customdata'][1]),clickData['points'][0]['customdata'][0],['Title: ', html.B(children=clickData['points'][0]['customdata'][0]), html.Br(), 'Year: ', html.B(children=clickData['points'][0]['x']), html.Br(), 'Pages: ', html.B(children=clickData['points'][0]['y']), html.Br(), 'Authors: ', html.B(children=clickData['points'][0]['customdata'][3]), html.Br(), 'Keywords:', html.B(children=clickData['points'][0]['customdata'][2]), html.Br(), html.A(children='Open PDF in Voyant Tools', target='_blank', href='http://voyant-tools.org/?input=http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf&stopList=stop.se.swedish-long.txt&panels=cirrus,reader,trends,summary,contexts')]
     else:
         return '','','',''
 
@@ -101,7 +112,7 @@ def update_graph(selected_keywords, selected_authors):
         print('Selected authors:',selected_authors)
         filteredArticleData = filterByTokens(filteredArticleData,selected_authors,'Name')
     
-    fig = px.bar(filteredArticleData, x='Year', y='Pages', hover_data=['Title','NBN','Keywords','Name'], barmode = 'stack')
+    fig = px.bar(filteredArticleData, x='Year', y='Pages', hover_data=['Title','NBN','Keywords','Name', 'PID'], barmode = 'stack')
     fig.update_layout(transition_duration=500)
     return fig
 
