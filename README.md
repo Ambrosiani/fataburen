@@ -1,6 +1,8 @@
 # fataburen
  Explore Fataburen articles
 
+![Screenshot 2021-01-11](screenshot.png)
+
 Interactive visualization/exploration of Fataburen, the yearbook/journal of Nordiska museet & Skansen.
 
 Built using Dash & Plotly.
