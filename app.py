@@ -57,6 +57,9 @@ app.layout = html.Div(children =[
         multi=True,
         placeholder='Select authors (OR)'
     ),
+    html.P(
+        id='articleCount',
+        children=''),
     dcc.Graph(
         id = 'articlesByYearFigure'
     ),
@@ -95,9 +98,10 @@ def display_click_data(clickData):
         return '','','',''
 
 @app.callback(
-    dash.dependencies.Output('articlesByYearFigure', 'figure'),
-    dash.dependencies.Input('keyword', 'value'),
-    dash.dependencies.Input('author', 'value'))
+    Output('articlesByYearFigure', 'figure'),
+    Output('articleCount', 'children'),
+    Input('keyword', 'value'),
+    Input('author', 'value'))
 def update_graph(selected_keywords, selected_authors):
     if selected_keywords == 'Keywords' or selected_keywords == None or selected_keywords == []: # all these are versions of "Select all"
         print('Selected keywords: None')
@@ -114,8 +118,8 @@ def update_graph(selected_keywords, selected_authors):
     
     fig = px.bar(filteredArticleData, x='Year', y='Pages', hover_data=['Title','NBN','Keywords','Name', 'PID'], barmode = 'stack')
     fig.update_layout(transition_duration=500)
-    return fig
+    return fig, str(len(filteredArticleData))+' articles selected'
 
 if __name__ == '__main__': 
-    app.run_server(debug=False) 
+    app.run_server(debug=True) 
 
