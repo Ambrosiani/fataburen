@@ -10,7 +10,7 @@ from dash.dependencies import Input, Output
 
 import plotly.express as px
 
-from functions import filterByTokens, getTokenCountAsData, getUniqueValues
+from functions import filterByTokens, getTokenCountAsData
 
 # load article csv into panda
 
@@ -20,11 +20,13 @@ articleData['Pages'] = articleData['EndPage']-articleData['StartPage']+1 # add p
 
 articleData = articleData[articleData['NBN'].str.contains('nordiskamuseet')] # clean data by removing duplicate articles added by other institutions
 
-unique_keywords = getUniqueValues(articleData,'Keywords','Keywords',[])
+keywordsData = getTokenCountAsData(articleData,'Keywords','Keywords',[])
+authorsData = getTokenCountAsData(articleData,'Name','Authors',[])
 
-unique_authors = getUniqueValues(articleData,'Name','Authors',[])
+unique_keywords = keywordsData['Keywords'].unique()
+unique_authors = authorsData['Authors'].unique()
 
-authorsCount = getTokenCountAsData(articleData,'Name','Authors',[])
+# Prepare statistics (make this into a one-time csv operation)
 
 # Initiate & configure Dash to display the graphs
 
@@ -113,9 +115,9 @@ layout_statistics = html.Div(children=[
     html.P('Note: the filter is case-sensitive.'),
     html.Br(),
     dash_table.DataTable(
-        id='table',
-        columns=[{"name": i, "id": i} for i in authorsCount.columns],
-        data=authorsCount.to_dict('records'),
+        id='authorTable',
+        columns=[{"name": i, "id": i} for i in authorsData.columns],
+        data=authorsData.to_dict('records'),
         filter_action="native",
         sort_action='native',
         fixed_rows={'headers': True},
@@ -124,6 +126,32 @@ layout_statistics = html.Div(children=[
         style_cell_conditional=[
             {
                 'if': {'column_id': 'Authors'},
+                'textAlign': 'left'
+            }
+        ],
+        style_data_conditional=[
+            {
+                'if': {'row_index': 'odd'},
+                'backgroundColor': 'rgb(248, 248, 248)'
+            }
+        ],
+        style_header={
+            'fontWeight': 'bold'
+        },
+        style_as_list_view=True
+    ),
+    dash_table.DataTable(
+        id='keywordsTable',
+        columns=[{"name": i, "id": i} for i in keywordsData.columns],
+        data=keywordsData.to_dict('records'),
+        filter_action="native",
+        sort_action='native',
+        fixed_rows={'headers': True},
+        page_size=10,
+        page_action='native',
+        style_cell_conditional=[
+            {
+                'if': {'column_id': 'Keywords'},
                 'textAlign': 'left'
             }
         ],
@@ -169,11 +197,11 @@ def display_page(pathname):
     Output('pdf-link', 'title'),
     Input('articlesByYearFigure', 'clickData'))
 def display_click_data(clickData):
-    print(clickData)
     if clickData != None:
-        print ('Selected article: '+str(clickData['points'][0]['customdata'][0])+' ('+str(clickData['points'][0]['customdata'][1])+')')
+        print ('Selected article: '+str(clickData['points'][0]['customdata'][0])+' ('+str(clickData['points'][0]['customdata'][1])+')\n')
         return clickData['points'][0]['customdata'][1], 'https://urn.kb.se/resolve?urn='+ str(clickData['points'][0]['customdata'][1]),clickData['points'][0]['customdata'][0],['Title: ', html.B(children=clickData['points'][0]['customdata'][0]), html.Br(), 'Year: ', html.B(children=clickData['points'][0]['x']), html.Br(), 'Pages: ', html.B(children=clickData['points'][0]['y']), html.Br(), 'Authors: ', html.B(children=clickData['points'][0]['customdata'][3]), html.Br(), 'Keywords:', html.B(children=clickData['points'][0]['customdata'][2]), html.Br(), html.A(children='Open PDF in Voyant Tools', target='_blank', href='http://voyant-tools.org/?input=http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf&stopList=stop.se.swedish-long.txt&panels=cirrus,reader,trends,summary,contexts')],clickData['points'][0]['customdata'][0],'http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf',str(clickData['points'][0]['customdata'][0])+' (PDF)'
     else:
+        print ('Selected article: None\n')
         return '','','','','','',''
 
 @app.callback(
@@ -190,11 +218,11 @@ def update_graph(selected_keywords, selected_authors):
         filteredArticleData = filterByTokens(articleData,selected_keywords,'Keywords')
 
     if selected_authors == 'Name' or selected_authors == None or selected_authors == []: # all these are versions of "Select all"
-        print('Selected authors: None')
+        print('Selected authors: None\n')
     else:
-        print('Selected authors:',selected_authors)
+        print('Selected authors:',selected_authors,'\n')
         filteredArticleData = filterByTokens(filteredArticleData,selected_authors,'Name')
-    
+
     fig = px.bar(filteredArticleData, x='Year', y='Pages', hover_data=['Title','NBN','Keywords','Name', 'PID'], barmode = 'stack')
     fig.update_layout(transition_duration=500)
     return fig, str(len(filteredArticleData))+' articles selected'
