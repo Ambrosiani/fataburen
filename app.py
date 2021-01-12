@@ -121,5 +121,5 @@ def update_graph(selected_keywords, selected_authors):
     return fig, str(len(filteredArticleData))+' articles selected'
 
 if __name__ == '__main__': 
-    app.run_server(debug=True) 
+    app.run_server(debug=False) 
 
