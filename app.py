@@ -3,13 +3,14 @@ import pandas as pd
 import json
 
 import dash 
+import dash_table
 import dash_core_components as dcc     
 import dash_html_components as html 
 from dash.dependencies import Input, Output
 
 import plotly.express as px
 
-from functions import filterByTokens, getUniqueValues
+from functions import filterByTokens, getTokenCountAsData, getUniqueValues
 
 # load article csv into panda
 
@@ -23,15 +24,27 @@ unique_keywords = getUniqueValues(articleData,'Keywords','Keywords',[])
 
 unique_authors = getUniqueValues(articleData,'Name','Authors',[])
 
+authorsCount = getTokenCountAsData(articleData,'Name','Authors',[])
 
 # Initiate & configure Dash to display the graphs
 
-app = dash.Dash(__name__) 
+app = dash.Dash(__name__, suppress_callback_exceptions=True) 
 
 server = app.server
-  
-app.layout = html.Div(children =[ 
+
+url_bar_and_content_div = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+])
+
+app.layout = url_bar_and_content_div
+
+layout_explore = html.Div(children =[ 
     html.H1('Fataburen Articles 1886–2017'),
+    dcc.Link('Explore articles', href='/explore'),
+    html.Br(),
+    dcc.Link('Article statistics', href='/statistics'),
+    html.Br(),
     html.P('Explore the content of Fataburen, the yearbook/journal of Nordiska museet & Skansen.'),
     html.P(['Work in progress by ',
         html.A(
@@ -73,9 +86,17 @@ app.layout = html.Div(children =[
                 children=''
                 ),
             html.Br(),
-            'Link: ',
+            'Link to DiVA page: ',
             html.A(
                 id='outbound-link',
+                href='',
+                target='_blank',
+                children='',
+                title=''),
+            html.Br(),
+            'Direct link to PDF: ',
+            html.A(
+                id='pdf-link',
                 href='',
                 target='_blank',
                 children='',
@@ -83,19 +104,77 @@ app.layout = html.Div(children =[
         ])], className='one column')
 ])
 
+layout_statistics = html.Div(children=[
+    html.H1('Fataburen Articles 1886–2017'),
+    dcc.Link('Explore articles', href='/explore'),
+    html.Br(),
+    dcc.Link('Article statistics', href='/statistics'),
+    html.Br(),
+    html.P('Note: the filter is case-sensitive.'),
+    html.Br(),
+    dash_table.DataTable(
+        id='table',
+        columns=[{"name": i, "id": i} for i in authorsCount.columns],
+        data=authorsCount.to_dict('records'),
+        filter_action="native",
+        sort_action='native',
+        fixed_rows={'headers': True},
+        page_size=10,
+        page_action='native',
+        style_cell_conditional=[
+            {
+                'if': {'column_id': 'Authors'},
+                'textAlign': 'left'
+            }
+        ],
+        style_data_conditional=[
+            {
+                'if': {'row_index': 'odd'},
+                'backgroundColor': 'rgb(248, 248, 248)'
+            }
+        ],
+        style_header={
+            'fontWeight': 'bold'
+        },
+        style_as_list_view=True
+    )
+])
+
+app.validation_layout = html.Div([
+    url_bar_and_content_div,
+    layout_explore,
+    layout_statistics
+])
+
+
+# Index callbacks
+@app.callback(Output('page-content', 'children'),
+              Input('url', 'pathname'))
+def display_page(pathname):
+    if pathname == "/explore":
+        return layout_explore
+    elif pathname == "/statistics":
+        return layout_statistics
+    else:
+        return layout_explore
+
+# Explore callbacks
 @app.callback(
     Output('outbound-link', 'children'),
     Output('outbound-link', 'href'),
     Output('outbound-link', 'title'),
     Output('articleInfo', 'children'),
+    Output('pdf-link', 'children'),
+    Output('pdf-link', 'href'),
+    Output('pdf-link', 'title'),
     Input('articlesByYearFigure', 'clickData'))
 def display_click_data(clickData):
     print(clickData)
     if clickData != None:
         print ('Selected article: '+str(clickData['points'][0]['customdata'][0])+' ('+str(clickData['points'][0]['customdata'][1])+')')
-        return clickData['points'][0]['customdata'][1], 'https://urn.kb.se/resolve?urn='+ str(clickData['points'][0]['customdata'][1]),clickData['points'][0]['customdata'][0],['Title: ', html.B(children=clickData['points'][0]['customdata'][0]), html.Br(), 'Year: ', html.B(children=clickData['points'][0]['x']), html.Br(), 'Pages: ', html.B(children=clickData['points'][0]['y']), html.Br(), 'Authors: ', html.B(children=clickData['points'][0]['customdata'][3]), html.Br(), 'Keywords:', html.B(children=clickData['points'][0]['customdata'][2]), html.Br(), html.A(children='Open PDF in Voyant Tools', target='_blank', href='http://voyant-tools.org/?input=http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf&stopList=stop.se.swedish-long.txt&panels=cirrus,reader,trends,summary,contexts')]
+        return clickData['points'][0]['customdata'][1], 'https://urn.kb.se/resolve?urn='+ str(clickData['points'][0]['customdata'][1]),clickData['points'][0]['customdata'][0],['Title: ', html.B(children=clickData['points'][0]['customdata'][0]), html.Br(), 'Year: ', html.B(children=clickData['points'][0]['x']), html.Br(), 'Pages: ', html.B(children=clickData['points'][0]['y']), html.Br(), 'Authors: ', html.B(children=clickData['points'][0]['customdata'][3]), html.Br(), 'Keywords:', html.B(children=clickData['points'][0]['customdata'][2]), html.Br(), html.A(children='Open PDF in Voyant Tools', target='_blank', href='http://voyant-tools.org/?input=http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf&stopList=stop.se.swedish-long.txt&panels=cirrus,reader,trends,summary,contexts')],clickData['points'][0]['customdata'][0],'http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf',str(clickData['points'][0]['customdata'][0])+' (PDF)'
     else:
-        return '','','',''
+        return '','','','','','',''
 
 @app.callback(
     Output('articlesByYearFigure', 'figure'),

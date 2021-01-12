@@ -12,6 +12,12 @@ def createTokenCount(wordList, stopWordList):
 
 
 def getUniqueValues(dataframe,column,columnName,stopWordList):
+    tokenCount = getTokenCountAsData(dataframe,column,columnName,stopWordList)
+
+    unique_tokens = tokenCount[columnName].unique()
+    return unique_tokens
+
+def getTokenCountAsData(dataframe,column,columnName,stopWordList):
     tokenList = []
 
     for tokens in dataframe[column].str.split(';').tolist():
@@ -23,8 +29,8 @@ def getUniqueValues(dataframe,column,columnName,stopWordList):
 
     tokenCount = pd.DataFrame(createTokenCount(tokenList, stopWordList))
     tokenCount.columns = [columnName, 'Count']
-    unique_tokens = tokenCount[columnName].unique()
-    return unique_tokens
+    
+    return tokenCount
 
 def filterByTokens(dataframe,tokens,column):
     filters = []
