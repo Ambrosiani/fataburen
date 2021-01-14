@@ -3,7 +3,6 @@ import pandas as pd
 import json
 
 import dash 
-import dash_table
 import dash_core_components as dcc     
 import dash_html_components as html 
 from dash.dependencies import Input, Output
@@ -21,12 +20,20 @@ articleData['Pages'] = articleData['EndPage']-articleData['StartPage']+1 # add p
 articleData = articleData[articleData['NBN'].str.contains('nordiskamuseet')] # clean data by removing duplicate articles added by other institutions
 
 keywordsData = getTokenCountAsData(articleData,'Keywords','Keywords',[])
-authorsData = getTokenCountAsData(articleData,'Name','Authors',[])
-
 unique_keywords = keywordsData['Keywords'].unique()
-unique_authors = authorsData['Authors'].unique()
 
-# Prepare statistics (make this into a one-time csv operation)
+#authorsData = getTokenCountAsData(articleData,'Name','Authors',[])
+authorsData = pd.read_csv('fataburen_authors.csv')
+
+authorsDataByArticleCount = authorsData.copy()
+authorsDataByPageCount = authorsData.copy()
+authorsDataByEarliestArticle = authorsData.copy()
+
+authorsDataByArticleCount.sort_values(by=['ArticlesTotal','Name'], ascending=[True,False], inplace=True)
+authorsDataByPageCount.sort_values(by=['PagesTotal','Name'], ascending=[True,False], inplace=True)
+authorsDataByEarliestArticle.sort_values(by=['EarliestArticle','Name'], ascending=[False,False], inplace=True)
+
+unique_authors = authorsData['Name']
 
 # Initiate & configure Dash to display the graphs
 
@@ -112,60 +119,51 @@ layout_statistics = html.Div(children=[
     html.Br(),
     dcc.Link('Article statistics', href='/statistics'),
     html.Br(),
-    html.P('Note: the filter is case-sensitive.'),
-    html.Br(),
-    dash_table.DataTable(
-        id='authorTable',
-        columns=[{"name": i, "id": i} for i in authorsData.columns],
-        data=authorsData.to_dict('records'),
-        filter_action="native",
-        sort_action='native',
-        fixed_rows={'headers': True},
-        page_size=10,
-        page_action='native',
-        style_cell_conditional=[
-            {
-                'if': {'column_id': 'Authors'},
-                'textAlign': 'left'
-            }
-        ],
-        style_data_conditional=[
-            {
-                'if': {'row_index': 'odd'},
-                'backgroundColor': 'rgb(248, 248, 248)'
-            }
-        ],
-        style_header={
-            'fontWeight': 'bold'
-        },
-        style_as_list_view=True
+    html.Div(
+        dcc.Graph(
+            id='authorsMostArticles',
+            figure=px.bar(
+                authorsDataByArticleCount, 
+                x='ArticlesTotal', 
+                y='Name',
+                orientation='h',
+                title='Authors by Article Count'
+            ), 
+            style={'height':12075},
+        ),
+        style={'overflowY': 'scroll', 'height': 300, 'border':'2px solid black'}
     ),
-    dash_table.DataTable(
-        id='keywordsTable',
-        columns=[{"name": i, "id": i} for i in keywordsData.columns],
-        data=keywordsData.to_dict('records'),
-        filter_action="native",
-        sort_action='native',
-        fixed_rows={'headers': True},
-        page_size=10,
-        page_action='native',
-        style_cell_conditional=[
-            {
-                'if': {'column_id': 'Keywords'},
-                'textAlign': 'left'
-            }
-        ],
-        style_data_conditional=[
-            {
-                'if': {'row_index': 'odd'},
-                'backgroundColor': 'rgb(248, 248, 248)'
-            }
-        ],
-        style_header={
-            'fontWeight': 'bold'
-        },
-        style_as_list_view=True
+    html.Br(),
+    html.Div(
+        dcc.Graph(
+            id='authorsMostArticles',
+            figure=px.bar(
+                authorsDataByPageCount, 
+                x='PagesTotal', 
+                y='Name',
+                orientation='h',
+                title='Authors by Page Count'
+            ), 
+            style={'height':12075},
+        ),
+        style={'overflowY': 'scroll', 'height': 300, 'border':'2px solid black'}
+    ),
+    html.Br(),
+    html.Div(
+        dcc.Graph(
+            id='authorsActive',
+            figure=px.timeline(
+                authorsDataByEarliestArticle, 
+                x_start='EarliestArticle',
+                x_end='LatestArticle',
+                y='Name',
+                title='Authors Active'
+            ), 
+            style={'height':12075},
+        ),
+        style={'overflowY': 'scroll', 'height': 300, 'border':'2px solid black'}
     )
+    
 ])
 
 app.validation_layout = html.Div([

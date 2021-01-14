@@ -10,6 +10,18 @@ def createTokenCount(wordList, stopWordList):
             wordCountWithoutStopListWords.append(tuplet)
     return wordCountWithoutStopListWords
 
+def getTokenList(string):
+    tokenList = []
+
+    for tokens in string.split(';'):
+        if type(tokens) is list: # if entry has multiple tokens
+            for token in tokens:
+                tokenList.append(token)
+        if type(tokens) is str: # if entry has just one token
+            tokenList.append(tokens)
+
+    return tokenList
+
 def getTokenCountAsData(dataframe,column,columnName,stopWordList):
     tokenList = []
 
