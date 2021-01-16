@@ -48,14 +48,25 @@ url_bar_and_content_div = html.Div([
 
 app.layout = url_bar_and_content_div
 
-layout_explore = html.Div(children =[ 
+# Navigation
+
+header = html.Div(children=[
     html.H1('Fataburen Articles 1886–2017'),
-    dcc.Link('Explore articles', href='/explore'),
-    html.Br(),
-    dcc.Link('Article statistics', href='/statistics'),
-    html.Br(),
-    html.P('Explore the content of Fataburen, the yearbook/journal of Nordiska museet & Skansen.'),
-    html.P(['Work in progress by ',
+    dcc.Link('Explore articles', href='/explore'),' • Article Statistics: ',
+    dcc.Link('Authors by Article Count', href='/authors-articles'),' • ',
+    dcc.Link('Authors by Page Count', href='/authors-pages'),' • ',
+    dcc.Link('Authors by Active Period', href='/authors-period'),' • ',
+    html.Br()
+    ],
+    style={'height':'10vh'},
+    id='header'
+)
+
+# Layouts
+
+layout_explore = html.Div(children =[ 
+    header,
+    html.P(['Explore the content of Fataburen, the yearbook/journal of Nordiska museet & Skansen. Work in progress by ',
         html.A(
             children='Aron Ambrosiani',
             href='https://twitter.com/AronAmbrosiani/'
@@ -113,15 +124,11 @@ layout_explore = html.Div(children =[
         ])], className='one column')
 ])
 
-layout_statistics = html.Div(children=[
-    html.H1('Fataburen Articles 1886–2017'),
-    dcc.Link('Explore articles', href='/explore'),
-    html.Br(),
-    dcc.Link('Article statistics', href='/statistics'),
-    html.Br(),
+layout_authors_articles = html.Div(children=[
+    header,
     html.Div(
         dcc.Graph(
-            id='authorsMostArticles',
+            id='authorsByArticles',
             figure=px.bar(
                 authorsDataByArticleCount, 
                 x='ArticlesTotal', 
@@ -131,12 +138,15 @@ layout_statistics = html.Div(children=[
             ), 
             style={'height':12075},
         ),
-        style={'overflowY': 'scroll', 'height': 300, 'border':'2px solid black'}
-    ),
-    html.Br(),
+        style={'overflowY': 'scroll', 'height': '90vh'}
+    )
+])
+
+layout_authors_pages = html.Div(children=[
+    header,
     html.Div(
         dcc.Graph(
-            id='authorsMostArticles',
+            id='authorsByPages',
             figure=px.bar(
                 authorsDataByPageCount, 
                 x='PagesTotal', 
@@ -146,30 +156,36 @@ layout_statistics = html.Div(children=[
             ), 
             style={'height':12075},
         ),
-        style={'overflowY': 'scroll', 'height': 300, 'border':'2px solid black'}
-    ),
-    html.Br(),
+        style={'overflowY': 'scroll', 'height': '90vh'}
+    )
+])
+
+layout_authors_period = html.Div(children=[
+    header,
     html.Div(
         dcc.Graph(
-            id='authorsActive',
+            id='authorsByPeriod',
             figure=px.timeline(
                 authorsDataByEarliestArticle, 
                 x_start='EarliestArticle',
                 x_end='LatestArticle',
                 y='Name',
-                title='Authors Active'
+                title='Authors by Active Period'
             ), 
             style={'height':12075},
         ),
-        style={'overflowY': 'scroll', 'height': 300, 'border':'2px solid black'}
-    )
-    
+        style={'overflowY': 'scroll', 'height': '90vh'}
+    ) 
 ])
+
+# Add layouts to app
 
 app.validation_layout = html.Div([
     url_bar_and_content_div,
     layout_explore,
-    layout_statistics
+    layout_authors_articles,
+    layout_authors_pages,
+    layout_authors_period
 ])
 
 
@@ -179,8 +195,12 @@ app.validation_layout = html.Div([
 def display_page(pathname):
     if pathname == "/explore":
         return layout_explore
-    elif pathname == "/statistics":
-        return layout_statistics
+    elif pathname == "/authors-articles":
+        return layout_authors_articles
+    elif pathname == "/authors-pages":
+        return layout_authors_pages
+    elif pathname == "/authors-period":
+        return layout_authors_period
     else:
         return layout_explore
 
