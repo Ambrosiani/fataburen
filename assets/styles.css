@@ -14,16 +14,13 @@ h1 { padding: 10px 0; }
 }
 
 .dropdowns {
-    display: grid;
     column-gap: 10px;
+    display: grid;
     grid-template-columns: 1fr 1fr;
 }
 
 #keywordsByAuthor {
     min-height: 400px;
-}
-
-.dash-dropdown {
 }
 
 @media (max-width: 850px) {

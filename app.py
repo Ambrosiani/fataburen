@@ -1,25 +1,21 @@
-import pandas as pd
-
-import json
-
-import re
-
-import dash 
-import dash_core_components as dcc     
-import dash_html_components as html 
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
 from dash.dependencies import Input, Output
 
+import pandas as pd
 import plotly.express as px
+import re
 
-from functions import filterByTokens, getTokenCountAsData
+from functions import filterByTokens
 
 # load article csv into panda
 
 articleData = pd.read_csv('fataburen_articles_diva.csv')
 
-articleData['Pages'] = articleData['EndPage']-articleData['StartPage']+1 # add pagecount as separate column in dataframe
+articleData['Pages'] = articleData['EndPage']-articleData['StartPage']+1  # add pagecount as separate column in dataframe
 
-articleData = articleData[articleData['NBN'].str.contains('nordiskamuseet')] # clean data by removing duplicate articles added by other institutions
+articleData = articleData[articleData['NBN'].str.contains('nordiskamuseet')]  # clean data by removing duplicate articles added by other institutions
 
 # Load & prepare author data
 
@@ -30,9 +26,9 @@ authorsDataByArticleCount = authorsData.copy()
 authorsDataByPageCount = authorsData.copy()
 authorsDataByEarliestArticle = authorsData.copy()
 
-authorsDataByArticleCount.sort_values(by=['ArticlesTotal','Name'], ascending=[True,False], inplace=True)
-authorsDataByPageCount.sort_values(by=['PagesTotal','Name'], ascending=[True,False], inplace=True)
-authorsDataByEarliestArticle.sort_values(by=['EarliestArticle','Name'], ascending=[False,False], inplace=True)
+authorsDataByArticleCount.sort_values(by=['ArticlesTotal', 'Name'], ascending=[True, False], inplace=True)
+authorsDataByPageCount.sort_values(by=['PagesTotal', 'Name'], ascending=[True, False], inplace=True)
+authorsDataByEarliestArticle.sort_values(by=['EarliestArticle', 'Name'], ascending=[False, False], inplace=True)
 authorsDataByEarliestArticle['LatestArticleYear'] = authorsDataByEarliestArticle['LatestArticle'].str.slice(0, 4)
 authorsDataByEarliestArticle['ArticleMeanRounded'] = round(authorsDataByEarliestArticle['ArticleMean'], 0)
 
@@ -45,9 +41,9 @@ keywordsDataByArticleCount = keywordsData.copy()
 keywordsDataByPageCount = keywordsData.copy()
 keywordsDataByEarliestArticle = keywordsData.copy()
 
-keywordsDataByArticleCount.sort_values(by=['ArticlesTotal','Keyword'], ascending=[True,False], inplace=True)
-keywordsDataByPageCount.sort_values(by=['PagesTotal','Keyword'], ascending=[True,False], inplace=True)
-keywordsDataByEarliestArticle.sort_values(by=['EarliestArticle','Keyword'], ascending=[False,False], inplace=True)
+keywordsDataByArticleCount.sort_values(by=['ArticlesTotal', 'Keyword'], ascending=[True, False], inplace=True)
+keywordsDataByPageCount.sort_values(by=['PagesTotal', 'Keyword'], ascending=[True, False], inplace=True)
+keywordsDataByEarliestArticle.sort_values(by=['EarliestArticle', 'Keyword'], ascending=[False, False], inplace=True)
 keywordsDataByEarliestArticle['LatestArticleYear'] = keywordsDataByEarliestArticle['LatestArticle'].str.slice(0, 4)
 keywordsDataByEarliestArticle['ArticleMeanRounded'] = round(keywordsDataByEarliestArticle['ArticleMean'], 0)
 
@@ -55,7 +51,7 @@ unique_keywords = keywordsData['Keyword']
 
 # Initiate & configure Dash to display the graphs
 
-app = dash.Dash(__name__, suppress_callback_exceptions=True) 
+app = dash.Dash(__name__, suppress_callback_exceptions=True)
 
 server = app.server
 
@@ -68,30 +64,32 @@ url_bar_and_content_div = html.Div([
 
 header = html.Div(children=[
     html.H1('Fataburen Articles 1886–2017'),
-    dcc.Link('Explore Articles', href='/explore'),' • Article Statistics: ',
-    dcc.Link('Authors by Article Count', href='/authors-articles'),' • ',
-    dcc.Link('Authors by Page Count', href='/authors-pages'),' • ',
-    dcc.Link('Authors by Active Period', href='/authors-period'),' • ',
-    dcc.Link('Keywords by Author', href='/keywords-author'),' • ',
-    dcc.Link('Keywords by Article Count', href='/keywords-articles'),' • ',
-    dcc.Link('Keywords by Page Count', href='/keywords-pages'),' • ',
-    dcc.Link('Keywords by Active Period', href='/keywords-period'),' • ',
+    dcc.Link('Explore Articles', href='/explore'), ' • Article Statistics: ',
+    dcc.Link('Authors by Article Count', href='/authors-articles'), ' • ',
+    dcc.Link('Authors by Page Count', href='/authors-pages'), ' • ',
+    dcc.Link('Authors by Active Period', href='/authors-period'), ' • ',
+    dcc.Link('Keywords by Author', href='/keywords-author'), ' • ',
+    dcc.Link('Keywords by Article Count', href='/keywords-articles'), ' • ',
+    dcc.Link('Keywords by Page Count', href='/keywords-pages'), ' • ',
+    dcc.Link('Keywords by Active Period', href='/keywords-period'), ' • ',
     dcc.Link('About', href='/about'),
     ],
     id='header'
 )
 
-layout_explore = html.Div(children =[ 
+layout_explore = html.Div(children=[
     header,
-    html.P(['Explore the content of Fataburen, the yearbook/journal of Nordiska museet & Skansen. Work in progress by ',
+    html.P([
+        'Explore the content of Fataburen, the yearbook/journal of Nordiska museet & Skansen. Work in progress by ',
         html.A(
             children='Aron Ambrosiani',
             href='https://twitter.com/AronAmbrosiani/'
             ),
         '. ',
         dcc.Link('About this website', href='/about')
-        ]), 
-    html.Div(className='dropdowns',
+        ]),
+    html.Div(
+        className='dropdowns',
         children=[
             dcc.Dropdown(
                 id='keyword',
@@ -113,7 +111,7 @@ layout_explore = html.Div(children =[
         id='articleCount',
         children=''),
     dcc.Graph(
-        id = 'articlesByYearFigure'
+        id='articlesByYearFigure'
     ),
     html.Div([
         html.H2(
@@ -149,15 +147,15 @@ layout_authors_articles = html.Div(children=[
         dcc.Graph(
             id='authorsByArticles',
             figure=px.bar(
-                authorsDataByArticleCount, 
-                x='ArticlesTotal', 
+                authorsDataByArticleCount,
+                x='ArticlesTotal',
                 y='Name',
                 orientation='h',
                 title='Authors by Article Count',
                 hover_name='Name',
-                hover_data={'Name':False}
-            ), 
-            style={'height':len(authorsDataByArticleCount)*15},
+                hover_data={'Name': False}
+            ),
+            style={'height': len(authorsDataByArticleCount)*15},
         ),
         className='fullheight'
     )
@@ -169,15 +167,15 @@ layout_authors_pages = html.Div(children=[
         dcc.Graph(
             id='authorsByPages',
             figure=px.bar(
-                authorsDataByPageCount, 
-                x='PagesTotal', 
+                authorsDataByPageCount,
+                x='PagesTotal',
                 y='Name',
                 orientation='h',
                 title='Authors by Page Count',
                 hover_name='Name',
-                hover_data={'Name':False}
-            ), 
-            style={'height':len(authorsDataByArticleCount)*15},
+                hover_data={'Name': False}
+            ),
+            style={'height': len(authorsDataByArticleCount)*15},
         ),
         className='fullheight'
     )
@@ -185,29 +183,29 @@ layout_authors_pages = html.Div(children=[
 
 layout_authors_period = html.Div(children=[
     header,
-    html.Div(
-        ['Bars show timespan from earliest to latest published article. Mean publishing year displayed on hover.',
-                dcc.Graph(
-                    id='authorsByPeriod',
-                    figure=px.timeline(
-                        authorsDataByEarliestArticle, 
-                        x_start='EarliestArticle',
-                        x_end='LatestArticle',
-                        y='Name',
-                        title='Authors by Active Period',
-                        hover_name='Name',
-                        hover_data={
-                            'EarliestArticle':'|%Y',
-                            'LatestArticle': False,
-                            'LatestArticleYear':True,
-                            'ArticleMeanRounded': True,
-                            'Name':False
-                        }
-                    ), 
-                    style={'height':len(authorsDataByArticleCount)*15}
+    html.Div([
+        'Bars show timespan from earliest to latest published article. Mean publishing year displayed on hover.',
+        dcc.Graph(
+            id='authorsByPeriod',
+            figure=px.timeline(
+                authorsDataByEarliestArticle,
+                x_start='EarliestArticle',
+                x_end='LatestArticle',
+                y='Name',
+                title='Authors by Active Period',
+                hover_name='Name',
+                hover_data={
+                    'EarliestArticle': '|%Y',
+                    'LatestArticle': False,
+                    'LatestArticleYear': True,
+                    'ArticleMeanRounded': True,
+                    'Name': False
+                }
+            ),
+            style={'height': len(authorsDataByArticleCount)*15}
         )],
         className='fullheight'
-    ) 
+    )
 ])
 
 layout_keywords_author = html.Div(children=[
@@ -221,9 +219,8 @@ layout_keywords_author = html.Div(children=[
         placeholder='Select author',
     ),
     dcc.Graph(
-        id = 'keywordsByAuthor'
-    ),
-    ])
+        id='keywordsByAuthor'
+    )])
 
 layout_keywords_articles = html.Div(children=[
     header,
@@ -231,15 +228,15 @@ layout_keywords_articles = html.Div(children=[
         dcc.Graph(
             id='keywordsByArticles',
             figure=px.bar(
-                keywordsDataByArticleCount, 
-                x='ArticlesTotal', 
+                keywordsDataByArticleCount,
+                x='ArticlesTotal',
                 y='Keyword',
                 orientation='h',
                 title='Keywords by Article Count',
                 hover_name='Keyword',
-                hover_data={'Keyword':False}
-            ), 
-            style={'height':len(keywordsDataByArticleCount)*15},
+                hover_data={'Keyword': False}
+            ),
+            style={'height': len(keywordsDataByArticleCount)*15},
         ),
         className='fullheight'
     )])
@@ -250,45 +247,44 @@ layout_keywords_pages = html.Div(children=[
         dcc.Graph(
             id='keywordsByPages',
             figure=px.bar(
-                keywordsDataByPageCount, 
-                x='PagesTotal', 
+                keywordsDataByPageCount,
+                x='PagesTotal',
                 y='Keyword',
                 orientation='h',
                 title='Keywords by Page Count',
                 hover_name='Keyword',
-                hover_data={'Keyword':False}
-            ), 
-            style={'height':len(keywordsDataByArticleCount)*15},
+                hover_data={'Keyword': False}
+            ),
+            style={'height': len(keywordsDataByArticleCount)*15},
         ),
         className='fullheight'
-    )
-])
+    )])
 
 layout_keywords_period = html.Div(children=[
     header,
-    html.Div(
-        ['Bars show timespan from earliest to latest published article. Mean publishing year displayed on hover.',
-                dcc.Graph(
-                    id='keywordsByPeriod',
-                    figure=px.timeline(
-                        keywordsDataByEarliestArticle, 
-                        x_start='EarliestArticle',
-                        x_end='LatestArticle',
-                        y='Keyword',
-                        title='Keywords by Active Period',
-                        hover_name='Keyword',
-                        hover_data={
-                            'EarliestArticle':'|%Y',
-                            'LatestArticle': False,
-                            'LatestArticleYear':True,
-                            'ArticleMeanRounded': True,
-                            'Keyword':False
-                        }
-                    ), 
-                    style={'height':len(keywordsDataByArticleCount)*15}
+    html.Div([
+        'Bars show timespan from earliest to latest published article. Mean publishing year displayed on hover.',
+        dcc.Graph(
+            id='keywordsByPeriod',
+            figure=px.timeline(
+                keywordsDataByEarliestArticle,
+                x_start='EarliestArticle',
+                x_end='LatestArticle',
+                y='Keyword',
+                title='Keywords by Active Period',
+                hover_name='Keyword',
+                hover_data={
+                    'EarliestArticle': '|%Y',
+                    'LatestArticle': False,
+                    'LatestArticleYear': True,
+                    'ArticleMeanRounded': True,
+                    'Keyword': False
+                }
+            ),
+            style={'height': len(keywordsDataByArticleCount)*15}
         )],
         className='fullheight'
-    ) 
+    )
 ])
 
 layout_about = html.Div(children=[
@@ -314,7 +310,8 @@ layout_about = html.Div(children=[
         ]),
     html.P([
         'The presented data was exported from ',
-        html.A(children='DiVA',
+        html.A(
+            children='DiVA',
             href='http://www.diva-portal.org/'
             ),
         ' using the following feed url: ',
@@ -343,6 +340,7 @@ app.validation_layout = html.Div([
     layout_about
 ])
 
+
 # Callback for layout switching
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
@@ -368,8 +366,8 @@ def display_page(pathname):
     else:
         return layout_explore
 
-# Callback for graph clicks on Explore view
 
+# Callback for graph clicks on Explore view
 @app.callback(
     Output('outbound-link', 'children'),
     Output('outbound-link', 'href'),
@@ -380,50 +378,50 @@ def display_page(pathname):
     Output('pdf-link', 'title'),
     Input('articlesByYearFigure', 'clickData'))
 def display_click_data(clickData):
-    if clickData != None:
-        print ('Selected article: '+str(clickData['points'][0]['customdata'][0])+' ('+str(clickData['points'][0]['customdata'][1])+')\n')
-        return clickData['points'][0]['customdata'][1], 'https://urn.kb.se/resolve?urn='+ str(clickData['points'][0]['customdata'][1]),clickData['points'][0]['customdata'][0],['Title: ', html.B(children=clickData['points'][0]['customdata'][0]), html.Br(), 'Year: ', html.B(children=clickData['points'][0]['x']), html.Br(), 'Pages: ', html.B(children=clickData['points'][0]['y']), html.Br(), 'Authors: ', html.B(children=clickData['points'][0]['customdata'][3]), html.Br(), 'Keywords:', html.B(children=clickData['points'][0]['customdata'][2]), html.Br(), html.A(children='Open PDF in Voyant Tools', target='_blank', href='http://voyant-tools.org/?input=http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf&stopList=stop.se.swedish-long.txt&panels=cirrus,reader,trends,summary,contexts')],clickData['points'][0]['customdata'][0],'http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf',str(clickData['points'][0]['customdata'][0])+' (PDF)'
+    if clickData is not None:
+        print('Selected article: '+str(clickData['points'][0]['customdata'][0]) + ' (' + str(clickData['points'][0]['customdata'][1]) + ')\n')
+        return clickData['points'][0]['customdata'][1], 'https://urn.kb.se/resolve?urn=' + str(clickData['points'][0]['customdata'][1]), clickData['points'][0]['customdata'][0], ['Title: ', html.B(children=clickData['points'][0]['customdata'][0]), html.Br(), 'Year: ', html.B(children=clickData['points'][0]['x']), html.Br(), 'Pages: ', html.B(children=clickData['points'][0]['y']), html.Br(), 'Authors: ', html.B(children=clickData['points'][0]['customdata'][3]), html.Br(), 'Keywords:', html.B(children=clickData['points'][0]['customdata'][2]), html.Br(), html.A(children='Open PDF in Voyant Tools', target='_blank', href='http://voyant-tools.org/?input=http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf&stopList=stop.se.swedish-long.txt&panels=cirrus,reader,trends,summary,contexts')], clickData['points'][0]['customdata'][0], 'http://nordiskamuseet.diva-portal.org/smash/get/diva2:'+str(clickData['points'][0]['customdata'][4])+'/FULLTEXT01.pdf', str(clickData['points'][0]['customdata'][0])+' (PDF)'
     else:
-        print ('Selected article: None\n')
-        return '','','','','','',''
+        print('Selected article: None\n')
+        return '', '', '', '', '', '', ''
+
 
 # Callback for keyword & author dropdowns on Explore view
-
 @app.callback(
     Output('articlesByYearFigure', 'figure'),
     Output('articleCount', 'children'),
     Input('keyword', 'value'),
     Input('author', 'value'))
 def update_graph(selected_keywords, selected_authors):
-    if selected_keywords == 'Keywords' or selected_keywords == None or selected_keywords == []: # all these are versions of "Select all"
+    if selected_keywords == 'Keywords' or selected_keywords is None or selected_keywords == []:  # all these are versions of "Select all"
         print('Selected keywords: None')
         filteredArticleData = articleData
     else:
-        print('Selected keywords:',selected_keywords)
-        filteredArticleData = filterByTokens(articleData,selected_keywords,'Keywords')
+        print('Selected keywords:', selected_keywords)
+        filteredArticleData = filterByTokens(articleData, selected_keywords, 'Keywords')
 
-    if selected_authors == 'Name' or selected_authors == None or selected_authors == []: # all these are versions of "Select all"
+    if selected_authors == 'Name' or selected_authors is None or selected_authors == []:  # all these are versions of "Select all"
         print('Selected authors: None\n')
     else:
-        print('Selected authors:',selected_authors,'\n')
-        filteredArticleData = filterByTokens(filteredArticleData,selected_authors,'Name')
+        print('Selected authors:', selected_authors, '\n')
+        filteredArticleData = filterByTokens(filteredArticleData, selected_authors, 'Name')
 
-    fig = px.bar(filteredArticleData, x='Year', y='Pages', hover_data=['Title','NBN','Keywords','Name', 'PID'], barmode = 'stack')
+    fig = px.bar(filteredArticleData, x='Year', y='Pages', hover_data=['Title', 'NBN', 'Keywords', 'Name', 'PID'], barmode='stack')
     fig.update_layout(transition_duration=500)
     return fig, str(len(filteredArticleData))+' articles selected'
 
-# Callback for Author dropdown on Keywords by Author view
 
+# Callback for Author dropdown on Keywords by Author view
 @app.callback(
     Output('keywordsByAuthor', 'figure'),
     Output('keywordsByAuthor', 'style'),
     Input('authorKeywords', 'value'))
-def update_graph(selected_author):
-    print('Selected author:',selected_author,'\n')
+def update_graph2(selected_author):
+    print('Selected author:', selected_author, '\n')
     filteredAuthorsData = authorsData[authorsData['Name'].str.contains(selected_author, na=False, regex=False)]
     listOfKeywordsString = filteredAuthorsData['KeywordsUsed'].iloc[0]
 
-    listOfKeywordsToProcess = re.split('[,]',listOfKeywordsString)
+    listOfKeywordsToProcess = re.split('[,]', listOfKeywordsString)
     listOfKeywords = []
     itemToAdd = []
     odd = True
@@ -441,14 +439,14 @@ def update_graph(selected_author):
 
     fig = px.bar(
         listOfKeywords,
-        x=1, 
-        y=0, 
+        x=1,
+        y=0,
         orientation='h',
         hover_name=0
     )
-    fig.update_layout(transition_duration=500,yaxis={'categoryorder':'total ascending'})
-    return fig, {'height':len(listOfKeywords)*20}
+    fig.update_layout(transition_duration=500, yaxis={'categoryorder': 'total ascending'})
+    return fig, {'height': len(listOfKeywords)*20}
 
-if __name__ == '__main__': 
     app.run_server(debug=False) 
 
+if __name__ == '__main__':
