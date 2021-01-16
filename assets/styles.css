@@ -1,5 +1,14 @@
 body, h1 { margin: 0; }
 
-#header { padding: 10px; }
+#page-content { padding: 0 10px; }
 
-h1 { padding-bottom: 10px; }
+h1 { padding: 10px 0; }
+
+#header { 
+    height: 100px;   
+}
+
+.fullheight {
+    height: calc(100vh - 100px);
+    overflow-y: scroll;
+}

@@ -56,9 +56,12 @@ header = html.Div(children=[
     dcc.Link('Authors by Article Count', href='/authors-articles'),' • ',
     dcc.Link('Authors by Page Count', href='/authors-pages'),' • ',
     dcc.Link('Authors by Active Period', href='/authors-period'),' • ',
-    html.Br()
+    dcc.Link('Keywords by Author', href='/keywords-author'),' • ',
+    dcc.Link('Keywords by Article Count', href='/keywords-articles'),' • ',
+    dcc.Link('Keywords by Page Count', href='/keywords-pages'),' • ',
+    dcc.Link('Keywords by Active Period', href='/keywords-period'),' • ',
+    dcc.Link('About', href='/about'),
     ],
-    style={'height':'10vh'},
     id='header'
 )
 
@@ -136,9 +139,9 @@ layout_authors_articles = html.Div(children=[
                 orientation='h',
                 title='Authors by Article Count'
             ), 
-            style={'height':12075},
+            style={'height':len(authorsDataByArticleCount)*15},
         ),
-        style={'overflowY': 'scroll', 'height': '90vh'}
+        className='fullheight'
     )
 ])
 
@@ -154,29 +157,55 @@ layout_authors_pages = html.Div(children=[
                 orientation='h',
                 title='Authors by Page Count'
             ), 
-            style={'height':12075},
+            style={'height':len(authorsDataByArticleCount)*15},
         ),
-        style={'overflowY': 'scroll', 'height': '90vh'}
+        className='fullheight'
     )
 ])
 
 layout_authors_period = html.Div(children=[
     header,
     html.Div(
-        dcc.Graph(
-            id='authorsByPeriod',
-            figure=px.timeline(
-                authorsDataByEarliestArticle, 
-                x_start='EarliestArticle',
-                x_end='LatestArticle',
-                y='Name',
-                title='Authors by Active Period'
-            ), 
-            style={'height':12075},
-        ),
-        style={'overflowY': 'scroll', 'height': '90vh'}
+        ['Bars show timespan from earliest to latest published article. Mean publishing year displayed on hover.',
+                dcc.Graph(
+                    id='authorsByPeriod',
+                    figure=px.timeline(
+                        authorsDataByEarliestArticle, 
+                        x_start='EarliestArticle',
+                        x_end='LatestArticle',
+                        y='Name',
+                        title='Authors by Active Period'
+                    ), 
+                    style={'height':len(authorsDataByArticleCount)*15}
+        )],
+        className='fullheight'
     ) 
 ])
+
+layout_keywords_author = html.Div(children=[
+    header,
+    html.Div('Placeholder keywords author')]
+    )
+
+layout_keywords_articles = html.Div(children=[
+    header,
+    html.Div('Placeholder keywords articles')]
+    )
+
+layout_keywords_pages = html.Div(children=[
+    header,
+    html.Div('Placeholder keywords pages')]
+    )
+
+layout_keywords_period = html.Div(children=[
+    header,
+    html.Div('Placeholder keywords period')]
+    )
+
+layout_about = html.Div(children=[
+    header,
+    html.Div('Placeholder About')]
+    )
 
 # Add layouts to app
 
@@ -185,8 +214,14 @@ app.validation_layout = html.Div([
     layout_explore,
     layout_authors_articles,
     layout_authors_pages,
-    layout_authors_period
+    layout_authors_period,
+    layout_keywords_author,
+    layout_keywords_articles,
+    layout_keywords_pages,
+    layout_keywords_period,
+    layout_about
 ])
+
 
 
 # Index callbacks
@@ -201,6 +236,16 @@ def display_page(pathname):
         return layout_authors_pages
     elif pathname == "/authors-period":
         return layout_authors_period
+    elif pathname == "/keywords-author":
+        return layout_keywords_author
+    elif pathname == "/keywords-articles":
+        return layout_keywords_articles
+    elif pathname == "/keywords-pages":
+        return layout_keywords_pages
+    elif pathname == "/keywords-period":
+        return layout_keywords_period
+    elif pathname == "/about":
+        return layout_about
     else:
         return layout_explore
 
