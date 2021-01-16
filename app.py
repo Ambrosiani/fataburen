@@ -19,11 +19,10 @@ articleData['Pages'] = articleData['EndPage']-articleData['StartPage']+1 # add p
 
 articleData = articleData[articleData['NBN'].str.contains('nordiskamuseet')] # clean data by removing duplicate articles added by other institutions
 
-keywordsData = getTokenCountAsData(articleData,'Keywords','Keywords',[])
-unique_keywords = keywordsData['Keywords'].unique()
+# Load & prepare author data
 
-#authorsData = getTokenCountAsData(articleData,'Name','Authors',[])
 authorsData = pd.read_csv('fataburen_authors.csv')
+unique_authors = authorsData['Name']
 
 authorsDataByArticleCount = authorsData.copy()
 authorsDataByPageCount = authorsData.copy()
@@ -35,7 +34,22 @@ authorsDataByEarliestArticle.sort_values(by=['EarliestArticle','Name'], ascendin
 authorsDataByEarliestArticle['LatestArticleYear'] = authorsDataByEarliestArticle['LatestArticle'].str.slice(0, 4)
 authorsDataByEarliestArticle['ArticleMeanRounded'] = round(authorsDataByEarliestArticle['ArticleMean'], 0)
 
-unique_authors = authorsData['Name']
+# Load & prepare keyword data
+
+keywordsData = pd.read_csv('fataburen_keywords.csv')
+unique_keywords = keywordsData['Keyword'].unique()
+
+keywordsDataByArticleCount = keywordsData.copy()
+keywordsDataByPageCount = keywordsData.copy()
+keywordsDataByEarliestArticle = keywordsData.copy()
+
+keywordsDataByArticleCount.sort_values(by=['ArticlesTotal','Keyword'], ascending=[True,False], inplace=True)
+keywordsDataByPageCount.sort_values(by=['PagesTotal','Keyword'], ascending=[True,False], inplace=True)
+keywordsDataByEarliestArticle.sort_values(by=['EarliestArticle','Keyword'], ascending=[False,False], inplace=True)
+keywordsDataByEarliestArticle['LatestArticleYear'] = keywordsDataByEarliestArticle['LatestArticle'].str.slice(0, 4)
+keywordsDataByEarliestArticle['ArticleMeanRounded'] = round(keywordsDataByEarliestArticle['ArticleMean'], 0)
+
+unique_keywords = keywordsData['Keyword']
 
 # Initiate & configure Dash to display the graphs
 
@@ -203,18 +217,69 @@ layout_keywords_author = html.Div(children=[
 
 layout_keywords_articles = html.Div(children=[
     header,
-    html.Div('Placeholder keywords articles')]
-    )
+    html.Div(
+        dcc.Graph(
+            id='keywordsByArticles',
+            figure=px.bar(
+                keywordsDataByArticleCount, 
+                x='ArticlesTotal', 
+                y='Keyword',
+                orientation='h',
+                title='Keywords by Article Count',
+                hover_name='Keyword',
+                hover_data={'Keyword':False}
+            ), 
+            style={'height':len(keywordsDataByArticleCount)*15},
+        ),
+        className='fullheight'
+    )])
 
 layout_keywords_pages = html.Div(children=[
     header,
-    html.Div('Placeholder keywords pages')]
+    html.Div(
+        dcc.Graph(
+            id='keywordsByPages',
+            figure=px.bar(
+                keywordsDataByPageCount, 
+                x='PagesTotal', 
+                y='Keyword',
+                orientation='h',
+                title='Keywords by Page Count',
+                hover_name='Keyword',
+                hover_data={'Keyword':False}
+            ), 
+            style={'height':len(keywordsDataByArticleCount)*15},
+        ),
+        className='fullheight'
     )
+])
 
 layout_keywords_period = html.Div(children=[
     header,
-    html.Div('Placeholder keywords period')]
-    )
+    html.Div(
+        ['Bars show timespan from earliest to latest published article. Mean publishing year displayed on hover.',
+                dcc.Graph(
+                    id='keywordsByPeriod',
+                    figure=px.timeline(
+                        keywordsDataByEarliestArticle, 
+                        x_start='EarliestArticle',
+                        x_end='LatestArticle',
+                        y='Keyword',
+                        title='Keywords by Active Period',
+                        hover_name='Keyword',
+                        hover_data={
+                            'EarliestArticle':'|%Y',
+                            'LatestArticle': False,
+                            'LatestArticleYear':True,
+                            'ArticleMeanRounded': True,
+                            'Keyword':False
+                        }
+                    ), 
+                    style={'height':len(keywordsDataByArticleCount)*15}
+        )],
+        className='fullheight'
+    ) 
+])
 
 layout_about = html.Div(children=[
     header,
