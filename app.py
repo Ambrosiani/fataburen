@@ -32,6 +32,8 @@ authorsDataByEarliestArticle = authorsData.copy()
 authorsDataByArticleCount.sort_values(by=['ArticlesTotal','Name'], ascending=[True,False], inplace=True)
 authorsDataByPageCount.sort_values(by=['PagesTotal','Name'], ascending=[True,False], inplace=True)
 authorsDataByEarliestArticle.sort_values(by=['EarliestArticle','Name'], ascending=[False,False], inplace=True)
+authorsDataByEarliestArticle['LatestArticleYear'] = authorsDataByEarliestArticle['LatestArticle'].str.slice(0, 4)
+authorsDataByEarliestArticle['ArticleMeanRounded'] = round(authorsDataByEarliestArticle['ArticleMean'], 0)
 
 unique_authors = authorsData['Name']
 
@@ -137,7 +139,9 @@ layout_authors_articles = html.Div(children=[
                 x='ArticlesTotal', 
                 y='Name',
                 orientation='h',
-                title='Authors by Article Count'
+                title='Authors by Article Count',
+                hover_name='Name',
+                hover_data={'Name':False}
             ), 
             style={'height':len(authorsDataByArticleCount)*15},
         ),
@@ -155,7 +159,9 @@ layout_authors_pages = html.Div(children=[
                 x='PagesTotal', 
                 y='Name',
                 orientation='h',
-                title='Authors by Page Count'
+                title='Authors by Page Count',
+                hover_name='Name',
+                hover_data={'Name':False}
             ), 
             style={'height':len(authorsDataByArticleCount)*15},
         ),
@@ -174,7 +180,15 @@ layout_authors_period = html.Div(children=[
                         x_start='EarliestArticle',
                         x_end='LatestArticle',
                         y='Name',
-                        title='Authors by Active Period'
+                        title='Authors by Active Period',
+                        hover_name='Name',
+                        hover_data={
+                            'EarliestArticle':'|%Y',
+                            'LatestArticle': False,
+                            'LatestArticleYear':True,
+                            'ArticleMeanRounded': True,
+                            'Name':False
+                        }
                     ), 
                     style={'height':len(authorsDataByArticleCount)*15}
         )],
