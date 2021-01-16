@@ -12,3 +12,29 @@ h1 { padding: 10px 0; }
     height: calc(100vh - 100px);
     overflow-y: scroll;
 }
+
+@media (max-width: 850px) {
+    #header { 
+        height: 130px;   
+    }
+
+    .fullheight {
+        height: calc(100vh - 130px);
+        overflow-y: scroll;
+    }
+}
+
+@media (max-width: 550px) {
+    #header { 
+        height: 160px;   
+    }
+
+    .fullheight {
+        height: calc(100vh - 160px);
+        overflow-y: scroll;
+    }
+}
+
+@media (max-width: 450px) {
+    h1 {font-size: 24px;}
+}
