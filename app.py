@@ -211,7 +211,7 @@ layout_keywords_author = html.Div(children=[
     dcc.Dropdown(
         id='authorKeywords',
         options=[{'label': i, 'value': i} for i in unique_authors],
-        value='Hammarstedt, Nils Edvard (Nordiska museet [877150])',
+        value='Hammarstedt, Nils Edvard',
         multi=False,
         placeholder='Select author',
     ),
