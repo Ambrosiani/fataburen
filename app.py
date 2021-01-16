@@ -11,7 +11,7 @@ from functions import filterByTokens
 
 # load article csv into panda
 
-articleData = pd.read_csv('fataburen_articles_diva.csv')
+articleData = pd.read_csv('fataburen_articles_diva_processed.csv')
 
 articleData['Pages'] = articleData['EndPage']-articleData['StartPage']+1  # add pagecount as separate column in dataframe
 
@@ -138,8 +138,8 @@ layout_explore = html.Div(children=[
                 target='_blank',
                 children='',
                 title='')
-        ])], className='one column')
-])
+        ])], className='one column'
+    )])
 
 layout_authors_articles = html.Div(children=[
     header,
@@ -158,8 +158,7 @@ layout_authors_articles = html.Div(children=[
             style={'height': len(authorsDataByArticleCount)*15},
         ),
         className='fullheight'
-    )
-])
+    )])
 
 layout_authors_pages = html.Div(children=[
     header,
@@ -178,8 +177,7 @@ layout_authors_pages = html.Div(children=[
             style={'height': len(authorsDataByArticleCount)*15},
         ),
         className='fullheight'
-    )
-])
+    )])
 
 layout_authors_period = html.Div(children=[
     header,
@@ -205,8 +203,7 @@ layout_authors_period = html.Div(children=[
             style={'height': len(authorsDataByArticleCount)*15}
         )],
         className='fullheight'
-    )
-])
+    )])
 
 layout_keywords_author = html.Div(children=[
     header,
@@ -284,8 +281,7 @@ layout_keywords_period = html.Div(children=[
             style={'height': len(keywordsDataByArticleCount)*15}
         )],
         className='fullheight'
-    )
-])
+    )])
 
 layout_about = html.Div(children=[
     header,
@@ -319,9 +315,8 @@ layout_about = html.Div(children=[
         html.A(
             children='http://www.diva-portal.org/smash/export.jsf?format=csvall&addFilename=true&aq=[[]]&aqe=[]&aq2=[[{”seriesISSN”:”0348-971X","organisationId-Xtra":false},{"publicationTypeCode":["chapter"]}]]&onlyFullText=false&noOfRows=2000&sortOrder=title_sort_asc&sortOrder2=dateIssued_sort_asc',
             href='http://www.diva-portal.org/smash/export.jsf?format=csvall&addFilename=true&aq=[[]]&aqe=[]&aq2=[[{”seriesISSN”:”0348-971X","organisationId-Xtra":false},{"publicationTypeCode":["chapter"]}]]&onlyFullText=false&noOfRows=2000&sortOrder=title_sort_asc&sortOrder2=dateIssued_sort_asc')
-        ])
-    ]
-)
+        ]
+    )])
 
 # Add layouts to app
 
@@ -337,8 +332,7 @@ app.validation_layout = html.Div([
     layout_keywords_articles,
     layout_keywords_pages,
     layout_keywords_period,
-    layout_about
-])
+    layout_about])
 
 
 # Callback for layout switching

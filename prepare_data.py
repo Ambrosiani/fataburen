@@ -13,6 +13,10 @@ articleData['Pages'] = articleData['EndPage']-articleData['StartPage']+1  # add 
 
 articleData = articleData[articleData['NBN'].str.contains('nordiskamuseet')]  # clean data by removing duplicate articles added by other institutions
 
+articleData['Name'] = articleData['Name'].str.replace(' (Nordiska museet [877150])', '', regex=False)
+articleData['Name'] = articleData['Name'].str.replace(' (Stiftelsen Nordiska museet)', '', regex=False)
+
+
 keywordsData = getTokenCountAsData(articleData, 'Keywords', 'Keywords', [])
 authorsData = getTokenCountAsData(articleData, 'Name', 'Authors', [])
 
@@ -20,7 +24,7 @@ unique_keywords = keywordsData['Keywords'].unique()
 unique_authors = authorsData['Authors'].unique()
 
 
-articleData.to_csv('fataburen_articles_diva_processed.csv', columns=['Name', 'Title', 'Keywords', 'StartPage', 'EndPage', 'Pages', 'Year', 'NBN'], index=False)
+articleData.to_csv('fataburen_articles_diva_processed.csv', columns=['Name', 'PID', 'Title', 'Keywords', 'StartPage', 'EndPage', 'Pages', 'Year', 'NBN'], index=False)
 
 # authorData = pd.DataFrame(columns=['Name','ArticlesTotal','PagesTotal','EarliestArticle','LatestArticle','KeywordsUsed','BornYear','Gender'])
 
