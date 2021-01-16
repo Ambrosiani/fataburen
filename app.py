@@ -2,6 +2,8 @@ import pandas as pd
 
 import json
 
+import re
+
 import dash 
 import dash_core_components as dcc     
 import dash_html_components as html 
@@ -57,14 +59,12 @@ app = dash.Dash(__name__, suppress_callback_exceptions=True)
 
 server = app.server
 
+# Layouts
+
 url_bar_and_content_div = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
 ])
-
-app.layout = url_bar_and_content_div
-
-# Navigation
 
 header = html.Div(children=[
     html.H1('Fataburen Articles 1886–2017'),
@@ -80,8 +80,6 @@ header = html.Div(children=[
     ],
     id='header'
 )
-
-# Layouts
 
 layout_explore = html.Div(children =[ 
     header,
@@ -214,13 +212,17 @@ layout_authors_period = html.Div(children=[
 
 layout_keywords_author = html.Div(children=[
     header,
+    html.P('Select author to display most used keywords.'),
     dcc.Dropdown(
         id='authorKeywords',
         options=[{'label': i, 'value': i} for i in unique_authors],
-        value='Name',
-        multi=True,
-        placeholder='Select authors (OR)'
-    )
+        value='Hammarstedt, Nils Edvard (Nordiska museet [877150])',
+        multi=False,
+        placeholder='Select author',
+    ),
+    dcc.Graph(
+        id = 'keywordsByAuthor'
+    ),
     ])
 
 layout_keywords_articles = html.Div(children=[
@@ -326,6 +328,8 @@ layout_about = html.Div(children=[
 
 # Add layouts to app
 
+app.layout = url_bar_and_content_div
+
 app.validation_layout = html.Div([
     url_bar_and_content_div,
     layout_explore,
@@ -339,9 +343,7 @@ app.validation_layout = html.Div([
     layout_about
 ])
 
-
-
-# Index callbacks
+# Callback for layout switching
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
@@ -366,7 +368,8 @@ def display_page(pathname):
     else:
         return layout_explore
 
-# Explore callbacks
+# Callback for graph clicks on Explore view
+
 @app.callback(
     Output('outbound-link', 'children'),
     Output('outbound-link', 'href'),
@@ -383,6 +386,8 @@ def display_click_data(clickData):
     else:
         print ('Selected article: None\n')
         return '','','','','','',''
+
+# Callback for keyword & author dropdowns on Explore view
 
 @app.callback(
     Output('articlesByYearFigure', 'figure'),
@@ -406,6 +411,43 @@ def update_graph(selected_keywords, selected_authors):
     fig = px.bar(filteredArticleData, x='Year', y='Pages', hover_data=['Title','NBN','Keywords','Name', 'PID'], barmode = 'stack')
     fig.update_layout(transition_duration=500)
     return fig, str(len(filteredArticleData))+' articles selected'
+
+# Callback for Author dropdown on Keywords by Author view
+
+@app.callback(
+    Output('keywordsByAuthor', 'figure'),
+    Output('keywordsByAuthor', 'style'),
+    Input('authorKeywords', 'value'))
+def update_graph(selected_author):
+    print('Selected author:',selected_author,'\n')
+    filteredAuthorsData = authorsData[authorsData['Name'].str.contains(selected_author, na=False, regex=False)]
+    listOfKeywordsString = filteredAuthorsData['KeywordsUsed'].iloc[0]
+
+    listOfKeywordsToProcess = re.split('[,]',listOfKeywordsString)
+    listOfKeywords = []
+    itemToAdd = []
+    odd = True
+    for item in listOfKeywordsToProcess:
+        item = item.strip('[]) ')
+        item = item.strip('(')
+        item = item.strip('\'')
+        itemToAdd.append(item)
+        if not odd:
+            listOfKeywords.append(itemToAdd)
+            itemToAdd = []
+            odd = True
+        else:
+            odd = False
+
+    fig = px.bar(
+        listOfKeywords,
+        x=1, 
+        y=0, 
+        orientation='h',
+        hover_name=0
+    )
+    fig.update_layout(transition_duration=500,yaxis={'categoryorder':'total ascending'})
+    return fig, {'height':len(listOfKeywords)*20}
 
 if __name__ == '__main__': 
     app.run_server(debug=False) 

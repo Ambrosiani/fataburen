@@ -19,6 +19,10 @@ h1 { padding: 10px 0; }
     grid-template-columns: 1fr 1fr;
 }
 
+#keywordsByAuthor {
+    min-height: 400px;
+}
+
 .dash-dropdown {
 }
 
