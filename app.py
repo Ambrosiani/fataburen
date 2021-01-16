@@ -441,6 +441,6 @@ def update_graph2(selected_author):
     fig.update_layout(transition_duration=500, yaxis={'categoryorder': 'total ascending'})
     return fig, {'height': len(listOfKeywords)*20}
 
-    app.run_server(debug=False) 
 
 if __name__ == '__main__':
+    app.run_server(debug=False)
