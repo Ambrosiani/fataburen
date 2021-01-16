@@ -13,6 +13,15 @@ h1 { padding: 10px 0; }
     overflow-y: scroll;
 }
 
+.dropdowns {
+    display: grid;
+    column-gap: 10px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.dash-dropdown {
+}
+
 @media (max-width: 850px) {
     #header { 
         height: 130px;   
@@ -32,6 +41,11 @@ h1 { padding: 10px 0; }
     .fullheight {
         height: calc(100vh - 160px);
         overflow-y: scroll;
+    }
+
+    .dropdowns {
+        grid-template-columns: 1fr;
+        grid-row-gap: 10px;
     }
 }
 

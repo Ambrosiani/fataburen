@@ -68,7 +68,7 @@ app.layout = url_bar_and_content_div
 
 header = html.Div(children=[
     html.H1('Fataburen Articles 1886–2017'),
-    dcc.Link('Explore articles', href='/explore'),' • Article Statistics: ',
+    dcc.Link('Explore Articles', href='/explore'),' • Article Statistics: ',
     dcc.Link('Authors by Article Count', href='/authors-articles'),' • ',
     dcc.Link('Authors by Page Count', href='/authors-pages'),' • ',
     dcc.Link('Authors by Active Period', href='/authors-period'),' • ',
@@ -90,24 +90,26 @@ layout_explore = html.Div(children =[
             children='Aron Ambrosiani',
             href='https://twitter.com/AronAmbrosiani/'
             ),
-        '. Code available at ',
-        html.A(
-            children='github.com/ambrosiani/fataburen/',
-            href='https://github.com/ambrosiani/fataburen/')
+        '. ',
+        dcc.Link('About this website', href='/about')
         ]), 
-    dcc.Dropdown(
-        id='keyword',
-        options=[{'label': i, 'value': i} for i in unique_keywords],
-        value='Keywords',
-        multi=True,
-        placeholder='Select keywords (OR)'
-    ),
-    dcc.Dropdown(
-        id='author',
-        options=[{'label': i, 'value': i} for i in unique_authors],
-        value='Name',
-        multi=True,
-        placeholder='Select authors (OR)'
+    html.Div(className='dropdowns',
+        children=[
+            dcc.Dropdown(
+                id='keyword',
+                options=[{'label': i, 'value': i} for i in unique_keywords],
+                value='Keywords',
+                multi=True,
+                placeholder='Select keywords (OR)'
+            ),
+            dcc.Dropdown(
+                id='author',
+                options=[{'label': i, 'value': i} for i in unique_authors],
+                value='Name',
+                multi=True,
+                placeholder='Select authors (OR)'
+            )
+        ]
     ),
     html.P(
         id='articleCount',
@@ -212,8 +214,14 @@ layout_authors_period = html.Div(children=[
 
 layout_keywords_author = html.Div(children=[
     header,
-    html.Div('Placeholder keywords author')]
+    dcc.Dropdown(
+        id='authorKeywords',
+        options=[{'label': i, 'value': i} for i in unique_authors],
+        value='Name',
+        multi=True,
+        placeholder='Select authors (OR)'
     )
+    ])
 
 layout_keywords_articles = html.Div(children=[
     header,
@@ -283,8 +291,38 @@ layout_keywords_period = html.Div(children=[
 
 layout_about = html.Div(children=[
     header,
-    html.Div('Placeholder About')]
-    )
+    html.P([
+        'Explore the content of Fataburen, the yearbook/journal of Nordiska museet & Skansen. Work in progress by ',
+        html.A(
+            children='Aron Ambrosiani',
+            href='https://twitter.com/AronAmbrosiani/'
+            ),
+        '. Code available at ',
+        html.A(
+            children='github.com/ambrosiani/fataburen/',
+            href='https://github.com/ambrosiani/fataburen/'),
+        ' as open source. Please reuse and adapt if you find it useful!'
+        ]),
+    html.P([
+        'This website was made as a final project for the course ',
+        html.A(
+            children='4ME501: Programming for Digital Humanities',
+            href='https://lnu.se/en/course/programming-for-digital-humanities/vaxjo-distance-international-part-time-autumn/'),
+        ' given at Linneaus University during the Autumn 2020 semester.'
+        ]),
+    html.P([
+        'The presented data was exported from ',
+        html.A(children='DiVA',
+            href='http://www.diva-portal.org/'
+            ),
+        ' using the following feed url: ',
+        html.Br(),
+        html.A(
+            children='http://www.diva-portal.org/smash/export.jsf?format=csvall&addFilename=true&aq=[[]]&aqe=[]&aq2=[[{”seriesISSN”:”0348-971X","organisationId-Xtra":false},{"publicationTypeCode":["chapter"]}]]&onlyFullText=false&noOfRows=2000&sortOrder=title_sort_asc&sortOrder2=dateIssued_sort_asc',
+            href='http://www.diva-portal.org/smash/export.jsf?format=csvall&addFilename=true&aq=[[]]&aqe=[]&aq2=[[{”seriesISSN”:”0348-971X","organisationId-Xtra":false},{"publicationTypeCode":["chapter"]}]]&onlyFullText=false&noOfRows=2000&sortOrder=title_sort_asc&sortOrder2=dateIssued_sort_asc')
+        ])
+    ]
+)
 
 # Add layouts to app
 
